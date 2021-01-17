@@ -1,4 +1,4 @@
-utils = require "utils"
+utils = include("timi/lib/utils")
 
 local music = {}
 

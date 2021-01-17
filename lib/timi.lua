@@ -1,27 +1,39 @@
-json = require "json"
-music = require "music"
-utils = require "utils"
+json = include("timi/lib/json")
+music = include("timi/lib/music")
+utils = include("timi/lib/utils")
 
-local Miti = {}
+local Timi = {}
 
-function Miti:new(args)
-  local m = setmetatable({}, { __index = Miti })
+function Timi:new(args)
+  local m = setmetatable({}, { __index = Timi })
   local args = args == nil and {} or args
   return m
 end
 
-function Miti:load(filename)
+function Timi:load(filename)
 	lines = utils.lines_from(filename)
+	if lines == nil or #lines == 0  then 
+		print("no filename "..filename)
+		do return end
+	end
 	notes = {}
 	on = {}
+	first_line = nil 
 	for i,line in ipairs(lines) do 
-		notes[i],on = self:parse_line(line,on)
+		if line ~= nil then
+			if first_line == nil then 
+				first_line = line
+			end
+			notes[i],on = self:parse_line(line,on)
+		end
 	end
-	notes[1] = self:parse_line(lines[1],on) -- turn off notes from the end
+	if first_line ~= nil then 
+		notes[1] = self:parse_line(first_line,on) -- turn off notes from the end
+	end
 	print(json.encode(notes))
 end
 
-function Miti:parse_line(line,on)
+function Timi:parse_line(line,on)
 	beats = {}
 	for substring in line:gmatch("%S+") do 
 		table.insert(beats,substring)
@@ -75,8 +87,4 @@ function Miti:parse_line(line,on)
 end
 
 
-m = Miti:new()
-
-m:load("test.miti")
-
--- print(json.encode(music.to_midi("Cm;6")))
+return Timi
