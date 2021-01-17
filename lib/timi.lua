@@ -3,7 +3,7 @@ music = include("timi/lib/music")
 utils = include("timi/lib/utils")
 lattice = include("kolor/lib/lattice")
 
-local ppqn = 8
+local ppqn = 48
 local meter = 4
 local ppm = ppqn*meter
 local Timi = {}
@@ -37,9 +37,9 @@ end
 function Timi:toggle_play()
 	self.playing = not self.playing 
 	if not self.playing then 
-		self.measure = 0
 		self.lattice:stop()
 		for i,dev in ipairs(self.device) do 
+			self.device[i].measure = 0
 			for k,_ in pairs(dev.notes_on) do 
 				dev.midi:note_off(k)
 				self.device[i].notes_on[k] = nil 
@@ -68,14 +68,18 @@ function Timi:emit_note(t)
 			print(i,self.device[i].measure,beat,json.encode(notes))
 			if notes.off ~= nil then 
 				for _, note in ipairs(notes.off) do 
-					self.device[i].midi:note_off(note.m)
-					self.device[i].notes_on[note.m]=nil
+					if self.device[i].notes_on[note.m] ~= nil then
+						self.device[i].midi:note_off(note.m)
+						self.device[i].notes_on[note.m]=nil
+					end
 				end
 			end
 			if notes.on ~= nil then 
 				for _, note in ipairs(notes.on) do 
-					self.device[i].midi:note_on(note.m,127)
-					self.device[i].notes_on[note.m]=true
+					if note.m ~= nil then
+						self.device[i].midi:note_on(note.m,127)
+						self.device[i].notes_on[note.m]=true
+					end
 				end
 			end			
 		end
@@ -94,7 +98,7 @@ function Timi:load(device_num,filename)
 	last_note = nil
 	first_line = nil 
 	for i,line in ipairs(lines) do 
-		if line ~= nil then
+		if line ~= nil and #line > 1 then
 			if first_line == nil then 
 				first_line = line
 			end
@@ -104,6 +108,7 @@ function Timi:load(device_num,filename)
 	if first_line ~= nil then 
 		measures[1] = self:parse_line(first_line,on) -- turn off notes from the end
 	end
+	print(json.encode(measures))
 	self.device[device_num].measures = measures
 end
 
