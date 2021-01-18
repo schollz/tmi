@@ -1,4 +1,4 @@
-utils = include("timi/lib/utils")
+utils = include("tmi/lib/utils")
 
 local music = {}
 

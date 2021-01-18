@@ -1,6 +1,6 @@
-json = include("timi/lib/json")
-music = include("timi/lib/music")
-utils = include("timi/lib/utils")
+json = include("tmi/lib/json")
+music = include("tmi/lib/music")
+utils = include("tmi/lib/utils")
 lattice = include("kolor/lib/lattice")
 
 local ppqn = 48
