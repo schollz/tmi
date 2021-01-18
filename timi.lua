@@ -5,6 +5,7 @@ m = timi:new()
 
 function init()
 	m:load(1,"/home/we/dust/code/timi/test.miti")
+	m:load(2,"/home/we/dust/code/timi/test2.miti")
 end
 
 
