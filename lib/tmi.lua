@@ -187,16 +187,26 @@ function Timi:parse_line(line,on,last_note)
 				b = beats[i-1]
 			end
 			for _,b0 in ipairs(utils.string_split(b,",")) do
-				on = music.to_midi(b0,last_note)
-				beat = math.floor((i-1) * (ppm/l.division) + 1)..""
-				if l.emit[beat] ~= nil and l.emit[beat].on ~= nil then 
-					table.insert(l.emit[beat].on,on)
-				elseif l.emit[beat] ~= nil then
-					l.emit[beat].on = on 
+				if tonumber(b0) ~= nil then
+					-- check if it is a cc, i.e. a number
+					if l.emit[beat] == nil then
+						l.emit[beat] = {}
+					elseif l.emit[beat].cc = nil then
+						l.emit[beat].cc = {}
+					end
+					table.insert(l.emit[beat].cc,b0)  
 				else
-					l.emit[beat] = {on=on} 
+					on = music.to_midi(b0,last_note)
+					beat = math.floor((i-1) * (ppm/l.division) + 1)..""
+					if l.emit[beat] ~= nil and l.emit[beat].on ~= nil then 
+						table.insert(l.emit[beat].on,on)
+					elseif l.emit[beat] ~= nil then
+						l.emit[beat].on = on 
+					else
+						l.emit[beat] = {on=on} 
+					end
+					last_note = on[1].m
 				end
-				last_note = on[1].m
 			end
 		end 
 		::continue::
