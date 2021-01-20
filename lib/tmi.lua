@@ -66,6 +66,9 @@ function Timi:emit_note(t)
 					end
 				end
 			end
+			if nots.cc ~= nil then 
+				-- TODO: emit the ccs
+			end
 			if notes.on ~= nil then 
 				for _, note in ipairs(notes.on) do 
 					if note.m ~= nil then
