@@ -12,15 +12,7 @@ function Timi:new(args)
   local m = setmetatable({}, { __index = Timi })
   local args = args == nil and {} or args
   m.playing = false 
-  m.device = {}
-  for i=1,4 do 
-  	m.device[i] = {
-	  	midi = midi.connect(i),
-	  	notes_on = {},
-	  	measure = 0,
-	  	measures={},  		
-		}
-  end
+  m.track = {}
   m.lattice = lattice:new({
   	ppqn=ppqn,
   	meter=meter,
@@ -38,11 +30,11 @@ function Timi:toggle_play()
 	self.playing = not self.playing 
 	if not self.playing then 
 		self.lattice:stop()
-		for i,dev in ipairs(self.device) do 
-			self.device[i].measure = 0
-			for k,_ in pairs(dev.notes_on) do 
-				dev.midi:note_off(k)
-				self.device[i].notes_on[k] = nil 
+		for i,track in ipairs(self.track) do 
+			self.track[i].measure = 0
+			for k,_ in pairs(track.notes_on) do 
+				track.midi:note_off(k)
+				self.track[i].notes_on[k] = nil 
 			end
 		end
 	else
@@ -53,32 +45,32 @@ end
 
 function Timi:emit_note(t)
 	beat = t%ppm+1
-	for i = 1,4 do 
-		if #self.device[i].measures == 0 then 
+	for i,track in ipairs(self.track) do 
+		if #track.measures == 0 then 
 			goto continue
 		end
 		if beat == 1 then 
-			self.device[i].measure = self.device[i].measure + 1 
-			if self.device[i].measure > #self.device[i].measures then 
-				self.device[i].measure = 1 
+			self.track[i].measure = self.track[i].measure + 1 
+			if self.track[i].measure > #self.track[i].measures then 
+				self.track[i].measure = 1 
 			end
 		end
-		local notes = self.device[i].measures[self.device[i].measure].emit[beat..""]
+		local notes = self.track[i].measures[self.track[i].measure].emit[beat..""]
 		if notes ~= nil then 
-			print(i,self.device[i].measure,beat,json.encode(notes))
+			print(i,self.track[i].measure,beat,json.encode(notes))
 			if notes.off ~= nil then 
 				for _, note in ipairs(notes.off) do 
-					if self.device[i].notes_on[note.m] ~= nil then
-						self.device[i].midi:note_off(note.m)
-						self.device[i].notes_on[note.m]=nil
+					if self.track[i].notes_on[note.m] ~= nil then
+						self.track[i].midi:note_off(note.m)
+						self.track[i].notes_on[note.m]=nil
 					end
 				end
 			end
 			if notes.on ~= nil then 
 				for _, note in ipairs(notes.on) do 
 					if note.m ~= nil then
-						self.device[i].midi:note_on(note.m,127)
-						self.device[i].notes_on[note.m]=true
+						self.track[i].midi:note_on(note.m,127)
+						self.track[i].notes_on[note.m]=true
 					end
 				end
 			end			
@@ -87,7 +79,7 @@ function Timi:emit_note(t)
 	end
 end
 
-function Timi:load(device_num,filename)
+function Timi:load(midi_id,filename)
 	lines = utils.lines_from(filename)
 	if lines == nil or #lines == 0  then 
 		print("no filename "..filename)
@@ -109,7 +101,13 @@ function Timi:load(device_num,filename)
 		measures[1] = self:parse_line(first_line,on) -- turn off notes from the end
 	end
 	print(json.encode(measures))
-	self.device[device_num].measures = measures
+	self.track[#self.track+1] = {
+  		id=midi_id,
+	  	midi = midi.connect(midi_id),
+	  	notes_on = {},
+	  	measure = 0,
+	  	measures= measures,  		
+	}
 end
 
 function Timi:parse_line(line,on,last_note)
