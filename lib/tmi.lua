@@ -6,10 +6,10 @@ lattice=include("kolor/lib/lattice")
 local ppqn=48
 local meter=4
 local ppm=ppqn*meter
-local Timi={}
+local Tmi={}
 
-function Timi:new(args)
-  local m=setmetatable({},{__index=Timi})
+function Tmi:new(args)
+  local m=setmetatable({},{__index=Tmi})
   local args=args==nil and {} or args
   m.playing=false
   m.instrument={}
@@ -33,7 +33,7 @@ function Timi:new(args)
   return m
 end
 
-function Timi:toggle_play()
+function Tmi:toggle_play()
   self.playing=not self.playing
   if not self.playing then
     self.lattice:stop()
@@ -52,7 +52,7 @@ function Timi:toggle_play()
 end
 
 
-function Timi:emit_note(t)
+function Tmi:emit_note(t)
   beat=t%ppm+1
   for k,instrument in ipairs(self.instrument) do
     for i,track in ipairs(instrument.track) do
@@ -93,7 +93,7 @@ function Timi:emit_note(t)
   end
 end
 
-function Timi:load_pattern(filename)
+function Tmi:load_pattern(filename)
   local f=assert(io.open(filename,"rb"))
   local content=f:read("*all")
   f:close()
@@ -131,8 +131,8 @@ function Timi:load_pattern(filename)
   return lines
 end
 
-function Timi:load(instrument_id,filename,track_name)
-  lines=Timi:load_pattern(filename)
+function Tmi:load(instrument_id,filename,track_name)
+  lines=Tmi:load_pattern(filename)
   if lines==nil or #lines==0 then
     print("no filename "..filename)
     do return end
@@ -159,7 +159,7 @@ function Timi:load(instrument_id,filename,track_name)
   }
 end
 
-function Timi:parse_line(line,on,last_note)
+function Tmi:parse_line(line,on,last_note)
   beats={}
   for substring in line:gmatch("%S+") do
     table.insert(beats,substring)
@@ -226,4 +226,4 @@ function Timi:parse_line(line,on,last_note)
 end
 
 
-return Timi
+return Tmi
