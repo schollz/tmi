@@ -16,7 +16,6 @@ function utils.string_split(input_string, split_character)
   return t
 end
 
-
 function utils.lines_from(file)
   if not utils.file_exists(file) then return {} end
   lines = {}

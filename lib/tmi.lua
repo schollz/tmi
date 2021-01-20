@@ -79,8 +79,46 @@ function Timi:emit_note(t)
 	end
 end
 
+function Timi:load_pattern(filename)
+    local f = assert(io.open(filename, "rb"))
+    local content = f:read("*all")
+    f:close()
+
+    local current_pattern = "none"
+    local pattern = {none={}}
+    local chain = {}
+    for s in content:gmatch("[^\r\n]+") do
+        words = split_str(s)
+        if words[1] == "pattern" then
+            pattern[words[2]] = {}
+            current_pattern = words[2]
+        elseif words[1] == "chain" then 
+            chain = {table.unpack(words, 2, #words)}
+        elseif current_pattern ~= nil then
+            table.insert(pattern[current_pattern],s)
+        end
+    end
+    if #chain==0 then 
+        table.insert(chain,current_pattern)
+    end
+
+    local s = ""
+    for _,c in ipairs(chain) do
+        if pattern[c] ~= nil then
+            for _,p in ipairs(pattern[c]) do 
+                s = s..p.."\n"
+            end
+        end
+    end
+    local lines = {}
+    for t in s:gmatch("[^\r\n]+") do
+        table.insert(lines,t)
+    end
+    return lines
+end
+
 function Timi:load(midi_id,filename)
-	lines = utils.lines_from(filename)
+	lines = Timi:load_pattern(filename)
 	if lines == nil or #lines == 0  then 
 		print("no filename "..filename)
 		do return end
