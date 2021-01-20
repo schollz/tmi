@@ -1,6 +1,5 @@
 utils = {}
 
-
 function utils.string_split(input_string, split_character)
   local s = split_character ~= nil and split_character or "%s"
   local t = {}
