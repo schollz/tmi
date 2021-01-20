@@ -34,6 +34,7 @@ function Tmi:new(args)
 end
 
 function Tmi:toggle_play()
+  print("toggle_play")
   self.playing=not self.playing
   if not self.playing then
     self.lattice:stop()
@@ -55,7 +56,7 @@ end
 function Tmi:emit_note(t)
   beat=t%ppm+1
   for k,instrument in ipairs(self.instrument) do
-    for i,track in ipairs(instrument.track) do
+    for i,track in pairs(instrument.track) do
       if #track.measures==0 then
         goto continue
       end
@@ -65,7 +66,7 @@ function Tmi:emit_note(t)
           self.instrument[k].track[i].measure=1
         end
       end
-      local notes=self.instrument[k].track[i].measures[self.track[i].measure].emit[beat..""]
+      local notes=self.instrument[k].track[i].measures[self.instrument[k].track[i].measure].emit[beat..""]
       if notes~=nil then
         print(i,self.instrument[k].track[i].measure,beat,json.encode(notes))
         if notes.off~=nil then
@@ -76,7 +77,7 @@ function Tmi:emit_note(t)
             end
           end
         end
-        if nots.cc~=nil then
+        if notes.cc~=nil then
           -- TODO: emit the ccs
         end
         if notes.on~=nil then
@@ -102,7 +103,7 @@ function Tmi:load_pattern(filename)
   local pattern={none={}}
   local chain={}
   for s in content:gmatch("[^\r\n]+") do
-    words=split_str(s)
+    words=utils.string_split(s)
     if words[1]=="pattern" then
       pattern[words[2]]={}
       current_pattern=words[2]
@@ -202,7 +203,7 @@ function Tmi:parse_line(line,on,last_note)
           -- check if it is a cc, i.e. a number
           if l.emit[beat]==nil then
             l.emit[beat]={}
-          elseif l.emit[beat].cc=nil then
+          elseif l.emit[beat].cc==nil then
             l.emit[beat].cc={}
           end
           table.insert(l.emit[beat].cc,b0)

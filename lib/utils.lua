@@ -8,7 +8,7 @@ function utils.string_split(input_string,split_character)
       table.insert(t,str)
     end
   else
-    for str in string.gmatch(input_string,"([^"..s.."]+)") c do
+    for str in string.gmatch(input_string,"([^"..s.."]+)") do
       table.insert(t,str)
     end
   end
