@@ -143,11 +143,12 @@ function Tmi:load(instrument_id,filename,track_name)
   last_note=nil
   first_line=nil
   for i,line in ipairs(lines) do
-    if line~=nil and #line>1 then
+    if line~=nil and #line>0 then
       if first_line==nil then
         first_line=line
       end
       measures[i],on,last_note=self:parse_line(line,on,last_note)
+      print(json.encode(measures[i]))
     end
   end
   if first_line~=nil then
@@ -212,6 +213,7 @@ function Tmi:parse_line(line,on,last_note)
           beat=math.floor((i-1)*(ppm/l.division)+1)..""
           if l.emit[beat]~=nil and l.emit[beat].on~=nil then
             table.insert(l.emit[beat].on,on)
+            on = l.emit[beat].on
           elseif l.emit[beat]~=nil then
             l.emit[beat].on=on
           else
