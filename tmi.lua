@@ -4,8 +4,8 @@ tmi=include("tmi/lib/tmi")
 m=tmi:new()
 
 function init()
-  m:load(1,"/home/we/dust/code/tmi/songs/test.tmi","test")
-  -- m:load(2,"/home/we/dust/code/tmi/test2.tmi")
+  m:load("plinky","/home/we/dust/code/tmi/songs/test.tmi")
+  m:load("plinky","/home/we/dust/code/tmi/songs/test3.tmi")
 end
 
 

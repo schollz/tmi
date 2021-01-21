@@ -7,6 +7,15 @@ local ppqn=48
 local meter=4
 local ppm=ppqn*meter
 local Tmi={}
+local velocities = {
+  pp = 30,
+  p = 40,
+  mp = 50,
+  mf = 60,
+  f = 80,
+  ff = 100,
+  fff = 127,
+}
 
 function Tmi:new(args)
   local m=setmetatable({},{__index=Tmi})
@@ -37,14 +46,15 @@ function Tmi:toggle_play()
   print("toggle_play")
   self.playing=not self.playing
   if not self.playing then
+    print("stopping")
     self.lattice:stop()
     for k,instrument in ipairs(self.instrument) do
-      for i,track in ipairs(instrument.track) do
+      for j,_ in pairs(instrument.notes_on) do
+        instrument.midi:note_off(j)
+        self.instrument[k].notes_on[j]=nil
+      end
+      for i,track in pairs(instrument.track) do
         self.instrument[k].track[i].measure=0
-        for j,_ in pairs(track.notes_on) do
-          track.midi:note_off(j)
-          self.instrument[k].track[i].notes_on[j]=nil
-        end
       end
     end
   else
@@ -83,7 +93,7 @@ function Tmi:emit_note(t)
         if notes.on~=nil then
           for _,note in ipairs(notes.on) do
             if note.m~=nil then
-              self.instrument[k].midi:note_on(note.m,127)
+              self.instrument[k].midi:note_on(note.m,note.v)
               self.instrument[k].notes_on[note.m]=true
             end
           end
@@ -133,6 +143,16 @@ function Tmi:load_pattern(filename)
 end
 
 function Tmi:load(instrument_id,filename)
+  if tonumber(instrument_id) == nil then 
+    -- find name 
+    for _, dev in ipairs(midi.devices) do
+      local name = string.lower(dev.name) 
+      if dev.port ~= nil and string.find(name,string.lower(instrument_id)) then
+        print("connecting "..filename.." to "..instrument_id)
+        instrument_id = dev.port
+      end
+    end
+  end
   lines=Tmi:load_pattern(filename)
   if lines==nil or #lines==0 then
     print("no filename "..filename)
@@ -175,6 +195,17 @@ function Tmi:parse_line(line,on,last_note)
   end
   for i,b in ipairs(beats) do
     local emit={}
+    velocity = 127
+    if string.find(b,"_") then 
+      foo = utils.string_split(b,"_")
+      if tonumber(foo[2]) == nil then 
+        print(foo[2])
+        velocity = velocities[foo[2]]
+      else
+        velocity = tonumber(foo[2])
+      end
+      b = foo[1]
+    end
 
     if #on>0 and b~="-" then
       -- turn off last beat
@@ -210,9 +241,18 @@ function Tmi:parse_line(line,on,last_note)
           table.insert(l.emit[beat].cc,b0)
         else
           on=music.to_midi(b0,last_note)
+          tab.print(on)
+          for i,_ in ipairs(on) do
+            print("velocity"..velocity)
+            on[i]["v"] = velocity 
+            print("on[i]: "..json.encode(on[i]))
+          end
+          print("on: "..json.encode(on))
           beat=math.floor((i-1)*(ppm/l.division)+1)..""
           if l.emit[beat]~=nil and l.emit[beat].on~=nil then
-            table.insert(l.emit[beat].on,on)
+            for i,_ in ipairs(on) do
+              table.insert(l.emit[beat].on,on[i])
+            end
             on = l.emit[beat].on
           elseif l.emit[beat]~=nil then
             l.emit[beat].on=on
