@@ -17,21 +17,24 @@ sequences are composed in `.tmi` files. rules for `.tmi` files:
 - the `.` character is a rest
 - multiple sequences can be in one file with each below a line specifying `pattern X` where you fill in `X`
 - if multiple sequences are in one file, chain them with `chain X Y`
+- comments are specified by `#`
 
 ### Examples
 
-a four chord song:
+the following are valid `.tmi` files
 
 ```
+# a four chord song
 C
 G/B
 Am/C
 F/C
 ```
 
-switch between playing a chord for two measures and an arpeggio:
-
 ```
+# switch between playing a chord for two measures 
+# and an arpeggio of the chord
+
 chain a b 
 
 pattern a 
@@ -39,8 +42,8 @@ Cmaj7
 -
 
 pattern b
-C4 E G B C E G B
-C6 B G E C B G E
+c4 e g b c e g b
+c6 b g e c b g e
 ```
 
 
