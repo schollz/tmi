@@ -132,7 +132,7 @@ function Tmi:load_pattern(filename)
   return lines
 end
 
-function Tmi:load(instrument_id,filename,track_name)
+function Tmi:load(instrument_id,filename)
   lines=Tmi:load_pattern(filename)
   if lines==nil or #lines==0 then
     print("no filename "..filename)
@@ -155,7 +155,7 @@ function Tmi:load(instrument_id,filename,track_name)
     measures[1]=self:parse_line(first_line,on) -- turn off notes from the end
   end
   print(json.encode(measures))
-  self.instrument[instrument_id].track[track_name]={
+  self.instrument[instrument_id].track[filename]={
     measure=0,
     measures=measures,
   }
