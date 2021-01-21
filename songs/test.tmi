@@ -1,0 +1,7 @@
+chain a a b
+
+pattern a
+a a a a
+
+pattern b
+b b b b
