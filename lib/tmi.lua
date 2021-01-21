@@ -113,14 +113,16 @@ function Tmi:load_pattern(filename)
   local pattern={none={}}
   local chain={}
   for s in content:gmatch("[^\r\n]+") do
-    words=utils.string_split(s)
-    if words[1]=="pattern" then
-      pattern[words[2]]={}
-      current_pattern=words[2]
-    elseif words[1]=="chain" then
-      chain={table.unpack(words,2,#words)}
-    elseif current_pattern~=nil then
-      table.insert(pattern[current_pattern],s)
+    if #s > 0 and s[1] ~= "#" then -- comment 
+      words=utils.string_split(s)
+      if words[1]=="pattern" then
+        pattern[words[2]]={}
+        current_pattern=words[2]
+      elseif words[1]=="chain" then
+        chain={table.unpack(words,2,#words)}
+      elseif current_pattern~=nil then
+        table.insert(pattern[current_pattern],s)
+      end
     end
   end
   if #chain==0 then
