@@ -100,11 +100,24 @@ function Tmi:toggle_play()
   params:set('tmi_playing',1-params:get('tmi_playing'))
 end
 
+function Tmi:live_reload()
+  for i,ins in ipairs(self.instrument) do
+    for filename,track in pairs(instrument.track) do
+      if track.last_modified !=utils.last_modified(filename) then
+        print("live reloading instrument "..i.." with filename "..filename)
+        self:load(i,filename)
+      end
+    end
+  end
+end
 
 function Tmi:emit_note(t)
   beat=t%ppm+1
   if beat==1 then
     self.measure=self.measure+1
+    if self.measure%4==0 then
+      self:live_reload()
+    end
   end
   if self.loading then
     do return end
@@ -226,6 +239,7 @@ function Tmi:load(instrument_id,filename)
   self.instrument[instrument_id].track[filename]={
     measure=0,
     measures=measures,
+    last_modified=utils.last_modified(filename),
   }
   self.loading=false
 end
