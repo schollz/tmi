@@ -1,8 +1,20 @@
-# textual midi interface (tmi)
+# textual music instructions / tiny midi interface / too much information
 
 *easily compose music with text*
 
-*tmi* is a norns library for a file-based music tracker providing surprisingly simple sequencing using a text-editor. it is based off [miti](https://github.com/schollz/miti) which is a raspberry-pi based version.
+*tmi* is a norns library for a file-based music tracker providing surprisingly simple sequencing using a text-editor. it is based off [miti](https://github.com/schollz/miti) which is a raspberry-pi based version i wrote about a year ago.
+
+other norns trackers like [yggdrasil](https://llllllll.co/t/yggdrasil), [nisp](https://llllllll.co/t/nisp), [orca](https://llllllll.co/t/orca) all excel at live-coding with tons of great features. *tmi* on the otherhand has very few features and does not allow live-coding. however, the benefit (and my use) of *tmi* is that **you can use it any norns script**. the *tmi* tracks are written in files which can be loaded via the norns parameters menu into any attached midi device.
+
+this script is basically the third (and final?) in a trilogy of norns scripts that are importable into norns scripts. basically you can now take a random norns script and...
+
+- ...add command-mapping to single buttons (via middy)
+- ...add a grid-based drum machine (via kolor)
+- ...add midi sequencing (via tmi)
+
+basically it will turn a script like oooooo or downtown into a dynamic performance instrument.
+
+## Install
 
 
 ## Documentation
