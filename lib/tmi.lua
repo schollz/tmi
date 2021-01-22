@@ -21,10 +21,11 @@ function Tmi:new(args)
   local m=setmetatable({},{__index=Tmi})
   local args=args==nil and {} or args
   m.playing=false
+  m.loading=false
   m.instrument={}
-  for i=1,4 do
-    m.instrument[i]={
-      midi=midi.connect(i),-- TODO also get midi name
+  for _,dev in ipairs(midi.devices) do
+    m.instrument[dev.port]={
+      midi=midi.connect(dev.port),-- TODO also get midi name
       track={},
       notes_on={},
     }
@@ -39,7 +40,40 @@ function Tmi:new(args)
     end,
     division=1/ppm
   }
+  m.measure = -1
+  m:add_parameters()
   return m
+end
+
+function Tmi:add_parameters()
+  local names = {}
+  for _, dev in ipairs(midi.devices) do
+      tab.print(dev)
+      local name = string.lower(dev.name) 
+      if dev.port ~= nil then
+        table.insert(names,{port=dev.port,name=dev.name})
+      end
+  end
+  if #names == 0 then 
+    print("tmi: no midi devices")
+    do return end
+  end
+  params:add_group("TMI",#names*4)
+  local name_folder=_path.data.."tmi/"
+  print("name_folder: "..name_folder)
+  for _, dev in ipairs(names) do
+    for i=1,4 do 
+      params:add_file(dev.port..i.."load_name_tmi",dev.name..i,name_folder)
+      params:set_action(dev.port..i.."load_name_tmi",function(x)
+        if #x<=#name_folder then
+          do return end
+        end
+        pathname,filename,ext=string.match(x,"(.-)([^\\/]-%.?([^%.\\/]*))$")
+        print("loading "..filename.." into "..dev.name..i)
+        m:load(dev.port,x)
+      end)
+    end
+  end
 end
 
 function Tmi:toggle_play()
@@ -53,9 +87,7 @@ function Tmi:toggle_play()
         instrument.midi:note_off(j)
         self.instrument[k].notes_on[j]=nil
       end
-      for i,track in pairs(instrument.track) do
-        self.instrument[k].track[i].measure=0
-      end
+      self.measure = -1
     end
   else
     self.lattice:hard_sync()
@@ -65,20 +97,21 @@ end
 
 function Tmi:emit_note(t)
   beat=t%ppm+1
+  if beat == 1 then
+    self.measure = self.measure + 1
+  end
+  if self.loading then 
+    do return end
+  end
   for k,instrument in ipairs(self.instrument) do
     for i,track in pairs(instrument.track) do
       if #track.measures==0 then
         goto continue
       end
-      if beat==1 then
-        self.instrument[k].track[i].measure=self.instrument[k].track[i].measure+1
-        if self.instrument[k].track[i].measure>#self.instrument[k].track[i].measures then
-          self.instrument[k].track[i].measure=1
-        end
-      end
-      local notes=self.instrument[k].track[i].measures[self.instrument[k].track[i].measure].emit[beat..""]
+      local measure = (self.measure%#track.measures)+1
+      local notes=self.instrument[k].track[i].measures[measure].emit[beat..""]
       if notes~=nil then
-        print(i,self.instrument[k].track[i].measure,beat,json.encode(notes))
+        print(k,i,measure,beat,json.encode(notes))
         if notes.off~=nil then
           for _,note in ipairs(notes.off) do
             if self.instrument[k].notes_on[note.m]~=nil then
@@ -145,6 +178,7 @@ function Tmi:load_pattern(filename)
 end
 
 function Tmi:load(instrument_id,filename)
+  self.loading=true
   if tonumber(instrument_id) == nil then 
     -- find name 
     for _, dev in ipairs(midi.devices) do
@@ -157,11 +191,13 @@ function Tmi:load(instrument_id,filename)
   end
   if self.instrument[instrument_id]==nil then 
     print("tmi: could not find instrument '"..instrument_id.."'")
+    self.loading=false
     do return end
   end
   lines=Tmi:load_pattern(filename)
   if lines==nil or #lines==0 then
     print("no filename "..filename)
+    self.loading=false
     do return end
   end
   measures={}
@@ -186,6 +222,7 @@ function Tmi:load(instrument_id,filename)
     measure=0,
     measures=measures,
   }
+  self.loading=false
 end
 
 function Tmi:parse_line(line,on,last_note)
