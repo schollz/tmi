@@ -84,7 +84,7 @@ function Tmi:add_parameters()
         end
         pathname,filename,ext=string.match(x,"(.-)([^\\/]-%.?([^%.\\/]*))$")
         print("loading "..filename.." into "..dev.name..i)
-        m:load(dev.port,x)
+        m:load(dev.port,x,i)
       end)
     end
   end
@@ -109,12 +109,12 @@ end
 
 function Tmi:live_reload()
   for i,instrument in ipairs(self.instrument) do
-    for filename,track in pairs(instrument.track) do
-      if track.last_modified ~= utils.last_modified(filename) then
-        print("live reloading instrument "..i.." with filename "..filename)
+    for _,track in pairs(instrument.track) do
+      if track.last_modified ~= utils.last_modified(track.filename) then
+        print("live reloading instrument "..i.." with filename "..track.filename)
         clock.run(function()
           self:stop_notes(i)
-          self:load(i,filename)
+          self:load(i,track.filename,track.slot)
           self:stop_notes(i)
         end)
       end
@@ -205,7 +205,7 @@ function Tmi:load_pattern(filename)
   return lines
 end
 
-function Tmi:load(instrument_id,filename)
+function Tmi:load(instrument_id,filename,slot)
   self.loading=true
   if tonumber(instrument_id)==nil then
     -- find name
@@ -250,10 +250,15 @@ function Tmi:load(instrument_id,filename)
   end
   -- print(json.encode(measures))
   -- print(instrument_id,filename)
-  self.instrument[instrument_id].track[filename]={
+  if slot==nil then 
+    slot = filename
+  end
+  self.instrument[instrument_id].track[slot]={
     measure=0,
     measures=measures,
     last_modified=utils.last_modified(filename),
+    filename=filename,
+    slot=slot,
   }
   self.loading=false
 end
