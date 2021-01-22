@@ -66,13 +66,8 @@ function Tmi:add_parameters()
       if not self.playing then
         print("stopping")
         self.lattice:stop()
-        for k,instrument in ipairs(self.instrument) do
-          for j,_ in pairs(instrument.notes_on) do
-            instrument.midi:note_off(j)
-            self.instrument[k].notes_on[j]=nil
-          end
-          self.measure=-1
-        end
+        self:stop_notes()
+        self.measure=-1
       else
         self.lattice:hard_sync()
       end
@@ -95,17 +90,33 @@ function Tmi:add_parameters()
   end
 end
 
+function Tmi:stop_notes(instrument_id)
+  for k,instrument in ipairs(self.instrument) do
+    if instrument_id == nil or (instrument_id == k) then 
+      for j,_ in pairs(instrument.notes_on) do
+        print("stopping note "..j.." on instrument "..k)
+        instrument.midi:note_off(j)
+        self.instrument[k].notes_on[j]=nil
+      end
+    end
+  end
+end
+
 function Tmi:toggle_play()
   print("toggle_play")
   params:set('tmi_playing',1-params:get('tmi_playing'))
 end
 
 function Tmi:live_reload()
-  for i,ins in ipairs(self.instrument) do
+  for i,instrument in ipairs(self.instrument) do
     for filename,track in pairs(instrument.track) do
-      if track.last_modified !=utils.last_modified(filename) then
+      if track.last_modified ~= utils.last_modified(filename) then
         print("live reloading instrument "..i.." with filename "..filename)
-        self:load(i,filename)
+        clock.run(function()
+          self:stop_notes(i)
+          self:load(i,filename)
+          self:stop_notes(i)
+        end)
       end
     end
   end
@@ -115,9 +126,7 @@ function Tmi:emit_note(t)
   beat=t%ppm+1
   if beat==1 then
     self.measure=self.measure+1
-    if self.measure%4==0 then
-      self:live_reload()
-    end
+    self:live_reload()
   end
   if self.loading then
     do return end
@@ -202,7 +211,7 @@ function Tmi:load(instrument_id,filename)
     -- find name
     for i,dev in ipairs(self.instrument) do
       if dev.port~=nil and string.find(string.lower(dev.name),string.lower(instrument_id)) then
-        print("connecting "..filename.." to "..instrument_id)
+        print("tmi: connecting "..filename.." to "..instrument_id)
         instrument_id=i
       end
     end
@@ -214,7 +223,7 @@ function Tmi:load(instrument_id,filename)
   end
   lines=Tmi:load_pattern(filename)
   if lines==nil or #lines==0 then
-    print("no filename "..filename)
+    print("tmi: no filename "..filename)
     self.loading=false
     do return end
   end
@@ -233,14 +242,14 @@ function Tmi:load(instrument_id,filename)
         first_line=line
       end
       measures[i],on,last_note=self:parse_line(line,on,last_note)
-      print(json.encode(measures[i]))
+      -- print(json.encode(measures[i]))
     end
   end
   if first_line~=nil then
     measures[1]=self:parse_line(first_line,on) -- turn off notes from the end
   end
-  print(json.encode(measures))
-  print(instrument_id,filename)
+  -- print(json.encode(measures))
+  -- print(instrument_id,filename)
   self.instrument[instrument_id].track[filename]={
     measure=0,
     measures=measures,
