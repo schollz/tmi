@@ -224,6 +224,11 @@ function Tmi:load(instrument_id,filename)
   first_line=nil
   for i,line in ipairs(lines) do
     if line~=nil and #line>0 then
+      if string.find(line,"#") then
+        -- remove comment
+        local foo=utils.string_split(line,"#")
+        line=foo[1]
+      end
       if first_line==nil then
         first_line=line
       end

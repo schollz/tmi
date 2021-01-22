@@ -16,7 +16,6 @@ basically it will turn a script like oooooo or downtown into a dynamic performan
 
 ## Install
 
-
 ## Documentation
 
 sequences are composed in `.tmi` files. rules for `.tmi` files:
@@ -57,8 +56,6 @@ pattern b
 c4 e g b c e g b
 c6 b g e c b g e
 ```
-
-
 
 ## License
 
