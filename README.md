@@ -14,8 +14,20 @@ this script is basically the third (and final?) in a trilogy of norns scripts th
 
 basically it will turn a script like oooooo or downtown into a dynamic performance instrument.
 
+## todo
+
+- [ ] add install information
+- [ ] add ui (use ui from song)
+- [ ] make tutorial video w/ plinky and otis
+
 ## Install
 
+```lua
+if util.file_exits(_path.code.."tmi") then 
+  kolor = include("lib/kolor")
+  kolor:new()
+end
+```
 ## Documentation
 
 sequences are composed in `.tmi` files. rules for `.tmi` files:
