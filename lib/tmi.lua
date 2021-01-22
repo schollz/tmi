@@ -49,7 +49,6 @@ end
 function Tmi:add_parameters()
   local names={}
   for _,dev in ipairs(midi.devices) do
-    tab.print(dev)
     local name=string.lower(dev.name)
     if dev.port~=nil then
       table.insert(names,{port=dev.port,name=dev.name})
@@ -64,7 +63,7 @@ function Tmi:add_parameters()
     action=function(value)
       self.playing=value==1
       if not self.playing then
-        print("stopping")
+        print("tmi: stopping")
         self.lattice:stop()
         self:stop_notes()
         self.measure=-1
@@ -74,7 +73,7 @@ function Tmi:add_parameters()
     end
   }
   local name_folder=_path.data.."tmi/"
-  print("name_folder: "..name_folder)
+  print("tmi: name_folder: "..name_folder)
   for _,dev in ipairs(names) do
     for i=1,4 do
       params:add_file(dev.port..i.."load_name_tmi",dev.name,name_folder)
@@ -139,7 +138,7 @@ function Tmi:emit_note(t)
       local measure=(self.measure%#track.measures)+1
       local notes=self.instrument[k].track[i].measures[measure].emit[beat..""]
       if notes~=nil then
-        print(k,i,measure,beat,json.encode(notes))
+        -- print(k,i,measure,beat,json.encode(notes))
         if notes.off~=nil then
           for _,note in ipairs(notes.off) do
             if self.instrument[k].notes_on[note.m]~=nil then
@@ -154,6 +153,7 @@ function Tmi:emit_note(t)
         if notes.on~=nil then
           for _,note in ipairs(notes.on) do
             if note.m~=nil then
+              print("tmi: measure "..(self.measure+1)..", beat "..beat..", note_on="..note.m)
               self.instrument[k].midi:note_on(note.m,note.v)
               self.instrument[k].notes_on[note.m]=true
             end
@@ -281,7 +281,6 @@ function Tmi:parse_line(line,on,last_note)
     if string.find(b,"_") then
       foo=utils.string_split(b,"_")
       if tonumber(foo[2])==nil then
-        print(foo[2])
         velocity=velocities[foo[2]]
       else
         velocity=tonumber(foo[2])
@@ -323,13 +322,9 @@ function Tmi:parse_line(line,on,last_note)
           table.insert(l.emit[beat].cc,b0)
         else
           on=music.to_midi(b0,last_note)
-          tab.print(on)
           for i,_ in ipairs(on) do
-            print("velocity"..velocity)
             on[i]["v"]=velocity
-            print("on[i]: "..json.encode(on[i]))
           end
-          print("on: "..json.encode(on))
           beat=math.floor((i-1)*(ppm/l.division)+1)..""
           if l.emit[beat]~=nil and l.emit[beat].on~=nil then
             for i,_ in ipairs(on) do
