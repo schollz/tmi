@@ -155,6 +155,10 @@ function Tmi:load(instrument_id,filename)
       end
     end
   end
+  if self.instrument[instrument_id]==nil then 
+    print("tmi: could not find instrument '"..instrument_id.."'")
+    do return end
+  end
   lines=Tmi:load_pattern(filename)
   if lines==nil or #lines==0 then
     print("no filename "..filename)
@@ -177,6 +181,7 @@ function Tmi:load(instrument_id,filename)
     measures[1]=self:parse_line(first_line,on) -- turn off notes from the end
   end
   print(json.encode(measures))
+  print(instrument_id,filename)
   self.instrument[instrument_id].track[filename]={
     measure=0,
     measures=measures,
