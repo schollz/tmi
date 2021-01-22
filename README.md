@@ -4,13 +4,13 @@
 
 *tmi* is a norns library for a file-based music tracker providing surprisingly simple sequencing using a text-editor. it is based off [miti](https://github.com/schollz/miti) which is a raspberry-pi based version i wrote about a year ago.
 
-other norns trackers like [yggdrasil](https://llllllll.co/t/yggdrasil), [nisp](https://llllllll.co/t/nisp), [orca](https://llllllll.co/t/orca) all excel at live-coding with tons of great features. *tmi* on the otherhand has very few features and does not allow live-coding. however, the benefit (and my use) of *tmi* is that **you can use it any norns script**. the *tmi* tracks are written in files which can be loaded via the norns parameters menu into any attached midi device.
+other norns trackers like [yggdrasil](https://llllllll.co/t/yggdrasil), [nisp](https://llllllll.co/t/nisp), [orca](https://llllllll.co/t/orca) all have great features and a wonderful interface. *tmi* on the otherhand has very few features and no (regular) interface. however, the benefit (and my use) of *tmi* is that **you can use it any norns script**. the *tmi* tracks are written in files which can be loaded via the norns parameters menu into any attached midi device. changes to files are hot-loaded so you can even do live-coding if you have a computer handy.
 
 this script is basically the third (and final?) in a trilogy of norns scripts that are importable into norns scripts. basically you can now take a random norns script and...
 
-- ...add command-mapping to single buttons (via middy)
-- ...add a grid-based drum machine (via kolor)
-- ...add midi sequencing (via tmi)
+- ...add command-mapping to single buttons (via [middy](https://llllllll.co/t/middy)
+- ...add a grid-based drum machine (via [kolor](https://llllllll.co/t/kolor)
+- ...add now midi sequencing (via [tmi](https://llllllll.co/t/tmi)
 
 basically it will turn a script like oooooo or downtown into a dynamic performance instrument.
 
