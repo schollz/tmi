@@ -1,8 +1,8 @@
 utils={}
 
 function utils.last_modified(filename)
-  local f = assert(io.popen("stat -c %Y "..filename))
-  local last_modified = f:read()
+  local f=assert(io.popen("stat -c %Y "..filename))
+  local last_modified=f:read()
   f:close()
   return last_modified
 end
