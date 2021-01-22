@@ -25,7 +25,8 @@ function Tmi:new(args)
   m.instrument={}
   for _,dev in ipairs(midi.devices) do
     m.instrument[dev.port]={
-      midi=midi.connect(dev.port),-- TODO also get midi name
+      name=dev.name,
+      midi=midi.connect(dev.port),
       track={},
       notes_on={},
     }
@@ -186,11 +187,10 @@ function Tmi:load(instrument_id,filename)
   self.loading=true
   if tonumber(instrument_id) == nil then 
     -- find name 
-    for _, dev in ipairs(midi.devices) do
-      local name = string.lower(dev.name) 
-      if dev.port ~= nil and string.find(name,string.lower(instrument_id)) then
+    for i, dev in ipairs(self.instrument) do
+      if dev.port ~= nil and string.find(string.lower(dev.name),string.lower(instrument_id)) then
         print("connecting "..filename.." to "..instrument_id)
-        instrument_id = dev.port
+        instrument_id = i
       end
     end
   end
