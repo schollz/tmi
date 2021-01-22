@@ -1,5 +1,12 @@
 utils={}
 
+function utils.last_modified(filename)
+  local f = assert(io.popen("stat -c %Y "..filename))
+  local last_modified = f:read()
+  f:close()
+  return last_modified
+end
+
 function utils.string_split(input_string,split_character)
   local s=split_character~=nil and split_character or "%s"
   local t={}
