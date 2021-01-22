@@ -58,12 +58,30 @@ function Tmi:add_parameters()
     print("tmi: no midi devices")
     do return end
   end
-  params:add_group("TMI",#names*4)
+  params:add_group("TMI",#names*4+1)
+  params:add{type='binary',name="playing",id='tmi_playing',behavior='toggle',
+    action=function(value)
+      self.playing = value==1
+      if not self.playing then
+        print("stopping")
+        self.lattice:stop()
+        for k,instrument in ipairs(self.instrument) do
+          for j,_ in pairs(instrument.notes_on) do
+            instrument.midi:note_off(j)
+            self.instrument[k].notes_on[j]=nil
+          end
+          self.measure = -1
+        end
+      else
+        self.lattice:hard_sync()
+      end
+    end
+  }
   local name_folder=_path.data.."tmi/"
   print("name_folder: "..name_folder)
   for _, dev in ipairs(names) do
     for i=1,4 do 
-      params:add_file(dev.port..i.."load_name_tmi",dev.name..i,name_folder)
+      params:add_file(dev.port..i.."load_name_tmi",dev.name,name_folder)
       params:set_action(dev.port..i.."load_name_tmi",function(x)
         if #x<=#name_folder then
           do return end
@@ -78,20 +96,7 @@ end
 
 function Tmi:toggle_play()
   print("toggle_play")
-  self.playing=not self.playing
-  if not self.playing then
-    print("stopping")
-    self.lattice:stop()
-    for k,instrument in ipairs(self.instrument) do
-      for j,_ in pairs(instrument.notes_on) do
-        instrument.midi:note_off(j)
-        self.instrument[k].notes_on[j]=nil
-      end
-      self.measure = -1
-    end
-  else
-    self.lattice:hard_sync()
-  end
+  params:set('tmi_playing',1-params:get('tmi_playing'))
 end
 
 
