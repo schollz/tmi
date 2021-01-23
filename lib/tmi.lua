@@ -91,16 +91,15 @@ function Tmi:add_parameters()
         print("loading "..filename.." into "..dev.name..i)
         self:_load(dev.port,x,i)
       end)
-      params:add{type='binary',name="mute slot "..i,id=dev.port..i.."load_name_tmi_mute",behavior='toggle',
-        action=function(value)
-          if self.instrument[dev.port].track[i]~=nil then
-            self.instrument[dev.port].track[i].mute=value==1
-            if self.instrument[dev.port].track[i].mute then
-              self:stop_notes(dev.port,i)
-            end
+      params:add_control(dev.port..i.."volume","velocity scaling",controlspec.new(0,2,"lin",0.01,1,"x",0.02/2))
+      params:set_action(dev.port..i.."volume",function(x)
+        if self.instrument[dev.port].track[i]~=nil then
+          self.instrument[dev.port].track[i].mute=x==0
+          if self.instrument[dev.port].track[i].mute then
+            self:stop_notes(dev.port,i)
           end
         end
-      }
+      end)
     end
   end
 end
@@ -181,8 +180,9 @@ function Tmi:emit_note(t)
         if notes.on~=nil then
           for _,note in ipairs(notes.on) do
             if note.m~=nil then
-              print("tmi: instrument "..k..", track "..i..", measure "..(self.measure+1)..", beat "..((beat-1)/self.ppqn+1)..", note_on="..note.m)
-              self.instrument[k].midi:note_on(note.m,note.v)
+              local velocity = math.floor(util.clamp(note.v*params:get(instrument.port..track.slot.."volume"),0,127))
+              print("tmi: instrument "..k..", track "..i..", measure "..(self.measure+1)..", beat "..((beat-1)/self.ppqn+1)..", note_on="..note.m..", v="..velocity)
+              self.instrument[k].midi:note_on(note.m,velocity)
               self.instrument[k].track[i].notes_on[note.m]=true
             end
           end
@@ -306,7 +306,8 @@ function Tmi:_load(instrument_id,filename,slot)
     filename=filename,
     slot=slot,
     notes_on={},
-    mute=params:get(instrument_id..slot.."load_name_tmi_mute")==1,
+    mute=params:get(instrument_id..slot.."volume")==0,
+    volume=1.0,
   }
   self.loading=false
 end
