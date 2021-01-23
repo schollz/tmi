@@ -3,9 +3,6 @@ music=include("tmi/lib/music")
 utils=include("tmi/lib/utils")
 lattice=include("kolor/lib/lattice")
 
-local ppqn=48
-local meter=4
-local ppm=ppqn*meter
 local Tmi={}
 local velocities={
   pp=30,
@@ -20,10 +17,14 @@ local velocities={
 function Tmi:new(args)
   local m=setmetatable({},{__index=Tmi})
   local args=args==nil and {} or args
+  m.meter=args.meter==nil and 4 or args.meter
+  m.ppqn=args.ppqn==nil and 48 or args.ppqn
+  m.ppm=m.ppqn*m.meter
   m.playing=false
   m.loading=false
   m.instrument={}
   for _,dev in ipairs(midi.devices) do
+    tab.print(dev)
     if dev.port~=nil then
       m.instrument[dev.port]={
         name=dev.name,
@@ -33,15 +34,19 @@ function Tmi:new(args)
       }
     end
   end
+  if #m.instrument==0 then
+    print("tmi: could not start, no midi instruments")
+    do return end
+  end
   m.lattice=lattice:new({
-    ppqn=ppqn,
-    meter=meter,
+    ppqn=m.ppqn,
+    meter=m.meter,
   })
   m.timer=m.lattice:new_pattern{
     action=function(t)
       m:emit_note(t)
     end,
-    division=1/ppm
+    division=1/m.ppm
   }
   m.measure=-1
   m:add_parameters()
@@ -136,7 +141,7 @@ function Tmi:live_reload()
 end
 
 function Tmi:emit_note(t)
-  beat=t%ppm+1
+  beat=t%self.ppm+1
   if beat==1 then
     self.measure=self.measure+1
   end
@@ -168,7 +173,7 @@ function Tmi:emit_note(t)
         if notes.on~=nil then
           for _,note in ipairs(notes.on) do
             if note.m~=nil then
-              print("tmi: measure "..(self.measure+1)..", beat "..((beat-1)/ppqn+1)..", note_on="..note.m)
+              print("tmi: instrument "..k..", track "..i..", measure "..(self.measure+1)..", beat "..((beat-1)/self.ppqn+1)..", note_on="..note.m)
               self.instrument[k].midi:note_on(note.m,note.v)
               self.instrument[k].track[i].notes_on[note.m]=true
             end
@@ -325,7 +330,7 @@ function Tmi:parse_line(line,on,last_note)
 
     if #on>0 and b~="-" then
       -- turn off last beat
-      beat=math.floor((i-1)*(ppm/l.division)-1)
+      beat=math.floor((i-1)*(self.ppm/l.division)-1)
       if beat<0 then
         beat=1
       end
@@ -360,7 +365,7 @@ function Tmi:parse_line(line,on,last_note)
           for i,_ in ipairs(on) do
             on[i]["v"]=velocity
           end
-          beat=math.floor((i-1)*(ppm/l.division)+1)..""
+          beat=math.floor((i-1)*(self.ppm/l.division)+1)..""
           if l.emit[beat]~=nil and l.emit[beat].on~=nil then
             for i,_ in ipairs(on) do
               table.insert(l.emit[beat].on,on[i])
