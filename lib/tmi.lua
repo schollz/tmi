@@ -23,7 +23,7 @@ function Tmi:new(args)
   m.playing=false
   m.loading=false
   m.instrument={}
-  for _,dev in ipairs(midi.devices) do
+  for _,dev in pairs(midi.devices) do
     tab.print(dev)
     if dev.port~=nil then
       m.instrument[dev.port]={
