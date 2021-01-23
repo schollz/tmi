@@ -8,17 +8,11 @@ other norns trackers like [yggdrasil](https://llllllll.co/t/yggdrasil), [nisp](h
 
 this script is basically the third (and final?) in a trilogy of norns scripts that are importable into norns scripts. basically you can now take a random norns script and...
 
-- ...add command-mapping to single buttons (via [middy](https://llllllll.co/t/middy)
-- ...add a grid-based drum machine (via [kolor](https://llllllll.co/t/kolor)
-- ...add now midi sequencing (via [tmi](https://llllllll.co/t/tmi)
+- ...add command-mapping to single buttons (via [middy](https://llllllll.co/t/middy))
+- ...add a grid-based drum machine (via [kolor](https://llllllll.co/t/kolor))
+- ...add now midi sequencing (via [tmi](https://llllllll.co/t/tmi))
 
 basically it will turn a script like oooooo or downtown into a dynamic performance instrument.
-
-## todo
-
-- [ ] add install information
-- [ ] add ui (use ui from song)
-- [ ] make tutorial video w/ plinky and otis
 
 ## Install
 
