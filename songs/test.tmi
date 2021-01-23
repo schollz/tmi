@@ -1,13 +1,2 @@
-chain a a a b
-
-
-pattern a
-f4,a4,c5,e5_mp
-
-
-pattern b
-Dmin7/F;4_mp
-Bbaj7/F;4_mp
--
-
-
+Fmaj7_mp
+Dmin7/F_mp

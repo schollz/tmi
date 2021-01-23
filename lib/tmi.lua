@@ -24,12 +24,14 @@ function Tmi:new(args)
   m.loading=false
   m.instrument={}
   for _,dev in ipairs(midi.devices) do
-    m.instrument[dev.port]={
-      name=dev.name,
-      midi=midi.connect(dev.port),
-      track={},
-      notes_on={},
-    }
+    if dev.port ~= nil then 
+      m.instrument[dev.port]={
+        name=dev.name,
+        port=dev.port,
+        midi=midi.connect(dev.port),
+        track={},
+      }
+    end
   end
   m.lattice=lattice:new({
     ppqn=ppqn,
@@ -48,17 +50,15 @@ end
 
 function Tmi:add_parameters()
   local names={}
-  for _,dev in ipairs(midi.devices) do
+  for _,dev in ipairs(self.instrument) do
     local name=string.lower(dev.name)
-    if dev.port~=nil then
-      table.insert(names,{port=dev.port,name=dev.name})
-    end
+    table.insert(names,{port=dev.port,name=dev.name})
   end
   if #names==0 then
     print("tmi: no midi devices")
     do return end
   end
-  params:add_group("TMI",#names*4+1)
+  params:add_group("TMI",#names*9+1)
   params:add{type='binary',name="playing",id='tmi_playing',behavior='toggle',
     action=function(value)
       self.playing=value==1
@@ -75,27 +75,42 @@ function Tmi:add_parameters()
   local name_folder=_path.data.."tmi/"
   print("tmi: name_folder: "..name_folder)
   for _,dev in ipairs(names) do
+    params:add_separator(dev.name)
     for i=1,4 do
-      params:add_file(dev.port..i.."load_name_tmi",dev.name,name_folder)
+      params:add_file(dev.port..i.."load_name_tmi","slot "..i,name_folder)
       params:set_action(dev.port..i.."load_name_tmi",function(x)
         if #x<=#name_folder then
           do return end
         end
         pathname,filename,ext=string.match(x,"(.-)([^\\/]-%.?([^%.\\/]*))$")
         print("loading "..filename.." into "..dev.name..i)
-        m:load(dev.port,x,i)
+        self:_load(dev.port,x,i)
       end)
+      params:add{type='binary',name="mute slot "..i,id=dev.port..i.."load_name_tmi_mute",behavior='toggle',
+        action=function(value)
+          if self.instrument[dev.port].track[i] ~= nil then 
+            self.instrument[dev.port].track[i].mute = value==1
+            if self.instrument[dev.port].track[i].mute then 
+              self:stop_notes(dev.port,i)
+            end
+          end
+        end
+      }
     end
   end
 end
 
-function Tmi:stop_notes(instrument_id)
+function Tmi:stop_notes(instrument_id,slot)
   for k,instrument in ipairs(self.instrument) do
     if instrument_id == nil or (instrument_id == k) then 
-      for j,_ in pairs(instrument.notes_on) do
-        print("stopping note "..j.." on instrument "..k)
-        instrument.midi:note_off(j)
-        self.instrument[k].notes_on[j]=nil
+      for i,track in pairs(instrument.track) do
+        if slot == nil or (slot == i) then 
+          for note,_ in pairs(track.notes_on) do 
+            print("stopping note "..note.." on instrument "..k.." on slot "..i)
+            instrument.midi:note_off(note)
+            self.instrument[k].track[i].notes_on[note]=nil
+          end
+        end
       end
     end
   end
@@ -108,13 +123,12 @@ end
 
 function Tmi:live_reload()
   for i,instrument in ipairs(self.instrument) do
-    for _,track in pairs(instrument.track) do
+    for slot,track in pairs(instrument.track) do
       if track.last_modified ~= utils.last_modified(track.filename) then
         print("live reloading instrument "..i.." with filename "..track.filename)
         clock.run(function()
-          self:stop_notes(i)
-          self:load(i,track.filename,track.slot)
-          self:stop_notes(i)
+          self:_load(i,track.filename,track.slot)
+          self:stop_notes(i,slot)
         end)
       end
     end
@@ -125,14 +139,14 @@ function Tmi:emit_note(t)
   beat=t%ppm+1
   if beat==1 then
     self.measure=self.measure+1
-    self:live_reload()
   end
   if self.loading then
     do return end
   end
+  local note_off = false
   for k,instrument in ipairs(self.instrument) do
     for i,track in pairs(instrument.track) do
-      if #track.measures==0 then
+      if #track.measures==0 or track.mute then
         goto continue
       end
       local measure=(self.measure%#track.measures)+1
@@ -141,9 +155,10 @@ function Tmi:emit_note(t)
         -- print(k,i,measure,beat,json.encode(notes))
         if notes.off~=nil then
           for _,note in ipairs(notes.off) do
-            if self.instrument[k].notes_on[note.m]~=nil then
+            if self.instrument[k].track[i].notes_on[note.m]~=nil then
               self.instrument[k].midi:note_off(note.m)
-              self.instrument[k].notes_on[note.m]=nil
+              self.instrument[k].track[i].notes_on[note.m]=nil
+              note_off=true
             end
           end
         end
@@ -153,15 +168,18 @@ function Tmi:emit_note(t)
         if notes.on~=nil then
           for _,note in ipairs(notes.on) do
             if note.m~=nil then
-              print("tmi: measure "..(self.measure+1)..", beat "..beat..", note_on="..note.m)
+              print("tmi: measure "..(self.measure+1)..", beat "..((beat-1)/ppqn+1)..", note_on="..note.m)
               self.instrument[k].midi:note_on(note.m,note.v)
-              self.instrument[k].notes_on[note.m]=true
+              self.instrument[k].track[i].notes_on[note.m]=true
             end
           end
         end
       end
       ::continue::
     end
+  end
+  if note_off then
+    self:live_reload()
   end
 end
 
@@ -206,16 +224,30 @@ function Tmi:load_pattern(filename)
 end
 
 function Tmi:load(instrument_id,filename,slot)
-  self.loading=true
-  if tonumber(instrument_id)==nil then
+  local instrument_id_original = instrument_id
+  if slot == nil then 
+    slot = 1
+  end
+  if tonumber(instrument_id_original)==nil then
+    instrument_id = nil
     -- find name
     for i,dev in ipairs(self.instrument) do
-      if dev.port~=nil and string.find(string.lower(dev.name),string.lower(instrument_id)) then
-        print("tmi: connecting "..filename.." to "..instrument_id)
+      print(dev.name,dev.port)
+      if dev.port~=nil and string.find(string.lower(dev.name),string.lower(instrument_id_original)) then
+        print("tmi: connecting "..filename.." to "..instrument_id_original)
         instrument_id=i
       end
     end
   end
+  if instrument_id ~= nil then
+    params:set(instrument_id..slot.."load_name_tmi",filename)
+  else
+    print("could not find "..instrument_id_original)
+  end
+end
+
+function Tmi:_load(instrument_id,filename,slot)
+  self.loading=true
   if self.instrument[instrument_id]==nil then
     print("tmi: could not find instrument '"..instrument_id.."'")
     self.loading=false
@@ -253,12 +285,15 @@ function Tmi:load(instrument_id,filename,slot)
   if slot==nil then 
     slot = filename
   end
+  self:stop_notes(instrument_id,slot)
   self.instrument[instrument_id].track[slot]={
     measure=0,
     measures=measures,
     last_modified=utils.last_modified(filename),
     filename=filename,
     slot=slot,
+    notes_on={},
+    mute=params:get(instrument_id..slot.."load_name_tmi_mute")==1,
   }
   self.loading=false
 end
