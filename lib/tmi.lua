@@ -34,10 +34,6 @@ function Tmi:new(args)
       }
     end
   end
-  if #m.instrument==0 then
-    print("tmi: could not start, no midi instruments")
-    do return end
-  end
   m.lattice=lattice:new({
     ppqn=m.ppqn,
     meter=m.meter,
@@ -49,6 +45,10 @@ function Tmi:new(args)
     division=1/m.ppm
   }
   m.measure=-1
+  if #m.instrument==0 then
+    print("tmi: could not start, no midi instruments")
+    do return m end
+  end
   m:add_parameters()
   return m
 end
@@ -124,6 +124,14 @@ end
 function Tmi:toggle_play()
   print("toggle_play")
   params:set('tmi_playing',1-params:get('tmi_playing'))
+end
+
+function Tmi:is_playing()
+  if #self.instrument == 0 then 
+    return false 
+  else
+    return params:get("tmi_playing")==1 
+  end
 end
 
 function Tmi:live_reload()

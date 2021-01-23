@@ -1,13 +1,13 @@
 -- tmi
+if util.file_exists(_path.code.."tmi") then 
+  tmi=include("tmi/lib/tmi")
+  m=tmi:new()
+  -- m:load("plinky","/home/we/dust/data/tmi/test4.tmi",1)
+  -- m:toggle_play()
+end
+
 
 function init()
-  if util.file_exists(_path.code.."tmi") then 
-    tmi=include("tmi/lib/tmi")
-    m=tmi:new()
-    -- m:load("plinky","/home/we/dust/data/tmi/test4.tmi",1)
-    -- m:toggle_play()
-  end
-  
   counter = metro.init()
   counter.time = 0.2
   counter.count = -1
@@ -39,7 +39,7 @@ function redraw()
   screen.text_right("STATUS")
 
   screen.move(70,7)
-  screen.text((params:get("tmi_playing") == 1) and "PLAYING" or "STOPPED", 15)
+  screen.text((m:is_playing()) and "PLAYING" or "STOPPED", 15)
 
   screen.move(15,30)
   screen.text("goto PARAMETERS > TMI")
