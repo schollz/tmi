@@ -14,6 +14,10 @@ this script finalizes a trilogy of norns scripts i've been writing that can be i
 
 the importable scripts above work in a multitude of scripts ([barcode](https://llllllll.co/t/barcode), [oooooo](https://llllllll.co/t/oooooo), [cranes](https://llllllll.co/t/cranes), [otis](https://llllllll.co/t/otis), to name a few) but might not work with all (especially if the host script already uses midi or something).
 
+## Demo/Tutorial
+
+https://vimeo.com/503866942
+
 ## Install *tmi*
 
 first install in maiden with 
@@ -34,16 +38,19 @@ end
 if you want *tmi* to play a certain file right away, you can add these two lines:
 
 ```lua
+-- change "op-1" to the instrument your using
 m:load("op-1","/home/we/dust/data/tmi/chords.tmi",1)
 m:toggle_play()
 ```
 ## Documentation
 
-make sure you have your midi device plugged in before you start.
 
-once you start, goto `PARAMETERS > TMI` and you can load `.tmi` files into any connected midi instrument (up to 4 tracks per instrument).
 
-### how to make `.tmi` files
+for goto `PARAMETERS > TMI`. make sure you have your midi device plugged in before you start, otherwise `TMI` menu will not be available.
+
+now you can load *tmi* files into any connected midi instrument (up to 4 tracks per instrument).
+
+### how to make *tmi* files
 
 *tmi* works with text files. by default these files are found in the `~/data/dust/tmi` directory. you need to make these files yourself using maiden or another text editor.
 
@@ -61,9 +68,9 @@ rules for these files:
 
 by default *tmi* uses a meter of 4, but this can be changed at startup using `m = tmi:new{meter=X}`.
 
-### examples of `.tmi` files
+### examples of *tmi* files
 
-the following are valid `.tmi` files
+the following are valid *tmi* files
 
 ```
 # a four chord song

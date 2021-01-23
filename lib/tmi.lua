@@ -370,7 +370,7 @@ function Tmi:parse_line(line,on,last_note)
           table.insert(l.emit[beat].cc,b0)
         else
           on=music.to_midi(b0,last_note)
-          for i,_ in ipairs(on) do
+          for i,_ in pairs(on) do
             on[i]["v"]=velocity
           end
           beat=math.floor((i-1)*(self.ppm/l.division)+1)..""
