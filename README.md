@@ -23,9 +23,12 @@ basically it will turn a script like oooooo or downtown into a dynamic performan
 ## Install
 
 ```lua
-if util.file_exits(_path.code.."tmi") then 
-  kolor = include("lib/kolor")
-  kolor:new()
+if util.file_exists(_path.code.."tmi") then 
+  tmi=include("tmi/lib/tmi")
+  m=tmi:new()
+  -- example of how to load and play on load!
+  -- m:load("plinky","/home/we/dust/data/tmi/test4.tmi",1)
+  -- m:toggle_play()
 end
 ```
 ## Documentation
