@@ -1,11 +1,12 @@
 
 -- 1. edit these variables
 -- how many steps total? (no more than 48)
-steps = 48
+steps = 4
 -- how many measures total?
 measures = 4
 -- specify which ccs, and their lfo modulation
 ccs = {
+	-- example:
 	{
 		cc=74,from=100,to=60,period=64,
 	},

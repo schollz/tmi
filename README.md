@@ -4,9 +4,9 @@
 
 https://vimeo.com/503866942
 
-*tmi* is a norns library for composing and sequencing devices with text, ported to norns from [a version i previously wrote](https://github.com/schollz/miti). its basically a norns tracker, but unlike other norns trackers with wonderful visuals and features (e.g. [yggdrasil](https://llllllll.co/t/yggdrasil), [orca](https://llllllll.co/t/orca)), *tmi* has few features and basically no visual interface. however, the one feature that *tmi* does have is that **tmi can be used within any other norns script** and with a few lines of code you can sequence multiple external devices from your favorite norns script.
+*tmi* is a norns library for composing and sequencing devices with text, ported to norns from [a version i previously wrote](https://github.com/schollz/miti). its basically a norns tracker, but unlike other norns trackers with wonderful visuals and features (e.g. [yggdrasil](https://llllllll.co/t/yggdrasil), [orca](https://llllllll.co/t/orca)), *tmi* has few features and basically no visual interface. however, the one feature that *tmi* does have is that **tmi can be used within any other norns script** so with a few lines of code+text you can sequence multiple external devices from your favorite norns script.
 
-*tmi* music tracks are written in text files. when *tmi* is added to a script, these files can be loaded via the `PARAMETERS > TMI` screen in the parameters menu. once loaded, any changes to files are hot-loaded so you could do live-coding (if you have a computer handy).
+*tmi* music tracks are written in text files (more on that below). when *tmi* is added to a script, these files can be loaded via the `PARAMETERS > TMI` screen in the parameters menu. once loaded, any changes to files are hot-loaded so you could do live-coding (if you have a computer handy).
 
 this script finalizes a trilogy of norns scripts i've been writing that can be imported into other norns scripts. my goals was to take a existing sample-based script be able to *also*...
 
@@ -65,12 +65,15 @@ rules for these files:
 - multiple sequences can be in one file with each below a line specifying "`pattern X`" where you fill in "`X`"
 - if multiple sequences are in one file, chain them with "`chain X Y`"
 - comments are specified by "`#`"
+- pairs of *numbers* are interpreted as cc number and cc value respectively, example: "`24,99`"
 
 by default *tmi* uses a meter of 4, but this can be changed at startup using `m = tmi:new{meter=X}`.
 
 ### examples of *tmi* files
 
-the following are valid *tmi* files
+the following are valid *tmi* files. 
+
+this one plays four chords:
 
 ```
 # a four chord song
@@ -79,6 +82,8 @@ G/B
 Am/C
 F/C
 ```
+
+this one alternates between holding out a C-major7 chord and an arpeggio:
 
 ```
 # switch between playing a chord for two measures 
@@ -95,3 +100,17 @@ c4 e g b c e g b
 c6 b g e c b g e
 ```
 
+modulate two ccs (74 and 24) periodically:
+
+```
+74,100,24,40 74,99,24,40 74,99,24,42 74,99,24,45 
+74,98,24,48 74,97,24,53 74,96,24,58 74,95,24,64 
+74,94,24,69 74,92,24,75 74,91,24,81 74,89,24,86 
+74,87,24,91 74,85,24,94 74,83,24,97 74,81,24,99 
+```
+
+this last example is actually generated from a lua script. you can generate your own lfo patterns on any number of ccs, just open `~/dust/code/tmi/cc_lfo.lua` and edit it and then run:
+
+```
+> lua ~/dust/code/tmi/cc_lfo.lua > ~/dust/data/tmi/your_ccs
+```
