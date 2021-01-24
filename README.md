@@ -109,8 +109,8 @@ modulate two ccs (74 and 24) periodically:
 74,87,24,91 74,85,24,94 74,83,24,97 74,81,24,99 
 ```
 
-this last example is actually generated from a lua script. you can generate your own lfo patterns on any number of ccs, just open `~/dust/code/tmi/cc_lfo.lua` and edit it and then run:
+this last example is actually generated from a lua script. you can generate your own lfo patterns on any number of ccs, just open `~/dust/code/tmi/lib/cc_lfo.lua` and edit it and then run:
 
 ```
-> lua ~/dust/code/tmi/cc_lfo.lua > ~/dust/data/tmi/your_ccs
+> lua ~/dust/code/tmi/lib/cc_lfo.lua > ~/dust/data/tmi/your_ccs
 ```
