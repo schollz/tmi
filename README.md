@@ -4,7 +4,7 @@
 
 https://vimeo.com/503866942
 
-*tmi* is a norns library for composing and sequencing devices with text, ported to norns from [a version i previously wrote](https://github.com/schollz/miti). its basically a norns tracker, but unlike other norns trackers with wonderful visuals and features (e.g. [yggdrasil](https://llllllll.co/t/yggdrasil), [orca](https://llllllll.co/t/orca)), *tmi* has few features and basically no visual interface. however, the one feature that *tmi* does have is that **tmi can be used within any other norns script** so with a few lines of code+text you can sequence multiple external devices from your favorite norns script.
+*tmi* is a norns library for composing and sequencing devices with text, ported to norns from [a version i previously wrote](https://github.com/schollz/miti). its basically a norns tracker, but unlike other norns trackers with wonderful visuals and features (e.g. [yggdrasil](https://llllllll.co/t/yggdrasil), [orca](https://llllllll.co/t/orca)), *tmi* has few features and basically no visual interface. however, the one feature that *tmi* does have is that **tmi can be used within any other norns script** so with a few lines of code+text you can sequence multiple external devices (notes and ccs) from your favorite norns script.
 
 *tmi* music tracks are written in text files (more on that below). when *tmi* is added to a script, these files can be loaded via the `PARAMETERS > TMI` screen in the parameters menu. once loaded, any changes to files are hot-loaded so you could do live-coding (if you have a computer handy).
 
@@ -109,7 +109,7 @@ modulate two ccs (74 and 24) periodically:
 74,87,24,91 74,85,24,94 74,83,24,97 74,81,24,99 
 ```
 
-this last example is actually generated from a lua script. you can generate your own lfo patterns on any number of ccs, just open `~/dust/code/tmi/cc_lfo.lua` and edit it and then run:
+this last example is actually generated from a lua script. though you can certainly type out the numbers you want, you can also generate your own cc lfo patterns on any number of ccs, just open `~/dust/code/tmi/cc_lfo.lua` and edit it and then run:
 
 ```
 > lua ~/dust/code/tmi/cc_lfo.lua > ~/dust/data/tmi/your_ccs
