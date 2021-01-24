@@ -164,7 +164,7 @@ function Tmi:emit_note(t)
       local measure=(self.measure%#track.measures)+1
       local notes=self.instrument[k].track[i].measures[measure].emit[beat..""]
       if notes~=nil then
-        -- print(k,i,measure,beat,json.encode(notes))
+        -- turn off notes that are done
         if notes.off~=nil then
           for _,note in ipairs(notes.off) do
             if self.instrument[k].track[i].notes_on[note.m]~=nil then
@@ -175,9 +175,14 @@ function Tmi:emit_note(t)
           end
         end
         if notes.cc~=nil then
-          -- TODO: emit the ccs
+          -- emit the ccs
+          for _, cc in ipairs(notes.cc) do 
+              print("tmi: instrument "..k..", track "..i..", measure "..(self.measure+1)..", beat "..((beat-1)/self.ppqn+1)..", cc="..cc.num..", val="..cc.val)
+              self.instrument[k].midi:cc(cc.num,cc.val)
+          end
         end
         if notes.on~=nil then
+          -- emit the notes
           for _,note in ipairs(notes.on) do
             if note.m~=nil then
               local velocity = math.floor(util.clamp(note.v*params:get(instrument.port..track.slot.."volume"),0,127))
@@ -360,15 +365,21 @@ function Tmi:parse_line(line,on,last_note)
       if b=="*" then
         b=beats[i-1]
       end
-      for _,b0 in ipairs(utils.string_split(b,",")) do
+      local note_parts = utils.string_split(b,",")
+      for j,b0 in ipairs(note_parts) do
         if tonumber(b0)~=nil then
-          -- check if it is a cc, i.e. a number
-          if l.emit[beat]==nil then
-            l.emit[beat]={}
-          elseif l.emit[beat].cc==nil then
-            l.emit[beat].cc={}
+          -- part is a number, assume it is a cc
+          -- ccs are pairs of integers, the cc number followed by value
+          if (j-1)%2==1 then 
+            local cc_number = note_parts[j-1]
+            local cc_value = note_parts[j]
+            if l.emit[beat]==nil then
+              l.emit[beat]={}
+            elseif l.emit[beat].cc==nil then
+              l.emit[beat].cc={}
+            end
+            table.insert(l.emit[beat].cc,{num=cc_number,val=cc_value})
           end
-          table.insert(l.emit[beat].cc,b0)
         else
           on=music.to_midi(b0,last_note)
           for i,_ in pairs(on) do
