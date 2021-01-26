@@ -141,8 +141,13 @@ function Tmi:live_reload()
       if track.last_modified~=utils.last_modified(track.filename) then
         print("live reloading instrument "..i.." with filename "..track.filename)
         clock.run(function()
+		-- WORK
+	  notes_on = {table.unpack(track.notes_on)}
+	  measures = {table.unpack(track.measures)}
           self:_load(i,track.filename,track.slot)
-          self:stop_notes(i,slot)
+	  self.instrument[i].track[slot].notes_on = notes_on
+	  -- TODO: check if any measures changed and turn those notes off
+          -- self:stop_notes(i,slot)
         end)
       end
     end
