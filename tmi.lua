@@ -2,9 +2,9 @@
 if util.file_exists(_path.code.."tmi") then 
   tmi=include("tmi/lib/tmi")
   m=tmi:new()
-  m:load("bou","/home/we/dust/data/tmi/ccs",1)
-  m:load("bou","/home/we/dust/data/tmi/untitled1.lua",2)
-  -- m:toggle_play()
+  -- m:load("plinky","/home/we/dust/data/tmi/ccs",1)
+  m:load("plinky","/home/we/dust/data/tmi/test2.tmi",1)
+  m:toggle_play()
 end
 
 
@@ -48,4 +48,9 @@ function redraw()
   screen.text("to load .tmi into device")
   screen.update()
   screen.ping()
+end
+
+
+function rerun()
+  norns.script.load(norns.state.script)
 end
