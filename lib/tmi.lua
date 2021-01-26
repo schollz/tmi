@@ -23,11 +23,11 @@ function Tmi:new(args)
   m.playing=false
   m.loading=false
   m.instrument={}
-  local found_instruments = false
+  local found_instruments=false
   for _,dev in pairs(midi.devices) do
     if dev.port~=nil then
       print("adding "..dev.name.." to port "..dev.port)
-      found_instruments = true
+      found_instruments=true
       m.instrument[dev.port]={
         name=dev.name,
         port=dev.port,
@@ -128,10 +128,10 @@ function Tmi:toggle_play()
 end
 
 function Tmi:is_playing()
-  if #self.instrument == 0 then 
-    return false 
+  if #self.instrument==0 then
+    return false
   else
-    return params:get("tmi_playing")==1 
+    return params:get("tmi_playing")==1
   end
 end
 
@@ -141,25 +141,23 @@ function Tmi:live_reload()
       if track.last_modified~=utils.last_modified(track.filename) then
         print("live reloading instrument "..i.." with filename "..track.filename)
         clock.run(function()
-	  notes_on = {table.unpack(track.notes_on)}
+          notes_on={table.unpack(track.notes_on)}
           self:_load(i,track.filename,track.slot)
-	  self.instrument[i].track[slot].notes_on = notes_on
-	  -- WORK
-	  -- check if any measures changed and turn those notes off 
-	  -- if they are currently playing
-          -- self:stop_notes(i,slot)
-	  for note,notedat in pairs(notes_on) do 
-		local notes=self.instrument[i].track[slot].measures[notedat.measure].emit[notedat.beat..""]
-		-- make sure note on is still in the ntoes
-		if notes ~= nil and notes.on ~= nil and notes.on[notedat.notei] ~= nil and notes.on[notedat.notei].m==note.m then 
-		 	-- all good
-		else
-			-- stop this particular note
-			print("need to stop note "..note.m)
-              		self.instrument[i].midi:note_off(note.m)
-              		self.instrument[i].track[slot].notes_on[note.m]=nil
-		end
-	  end
+          self.instrument[i].track[slot].notes_on=notes_on
+          -- check if any measures changed and turn those notes off
+          -- if they are currently playing
+          for note,notedat in pairs(notes_on) do
+            local notes=self.instrument[i].track[slot].measures[notedat.measure].emit[notedat.beat..""]
+            -- make sure note on is still in the ntoes
+            if notes~=nil and notes.on~=nil and notes.on[notedat.notei]~=nil and notes.on[notedat.notei].m==note.m then
+              -- all good
+            else
+              -- stop this particular note
+              print("need to stop note "..note.m)
+              self.instrument[i].midi:note_off(note.m)
+              self.instrument[i].track[slot].notes_on[note.m]=nil
+            end
+          end
         end)
       end
     end
@@ -195,17 +193,17 @@ function Tmi:emit_note(t)
         end
         if notes.cc~=nil then
           -- emit the ccs
-          for _, cc in ipairs(notes.cc) do 
-              local val = math.floor(util.clamp(cc.val*params:get(instrument.port..track.slot.."scaling"),0,127))
-              print("tmi: instrument "..k..", track "..i..", measure "..(self.measure+1)..", beat "..((beat-1)/self.ppqn+1)..", cc="..cc.num..", val="..val)
-              self.instrument[k].midi:cc(cc.num,val)
+          for _,cc in ipairs(notes.cc) do
+            local val=math.floor(util.clamp(cc.val*params:get(instrument.port..track.slot.."scaling"),0,127))
+            print("tmi: instrument "..k..", track "..i..", measure "..(self.measure+1)..", beat "..((beat-1)/self.ppqn+1)..", cc="..cc.num..", val="..val)
+            self.instrument[k].midi:cc(cc.num,val)
           end
         end
         if notes.on~=nil then
           -- emit the notes
           for notei,note in ipairs(notes.on) do
             if note.m~=nil then
-              local velocity = math.floor(util.clamp(note.v*params:get(instrument.port..track.slot.."scaling"),0,127))
+              local velocity=math.floor(util.clamp(note.v*params:get(instrument.port..track.slot.."scaling"),0,127))
               print("tmi: instrument "..k..", track "..i..", measure "..(self.measure+1)..", beat "..((beat-1)/self.ppqn+1)..", note_on="..note.m..", v="..velocity)
               self.instrument[k].midi:note_on(note.m,velocity)
               self.instrument[k].track[i].notes_on[note.m]={measure=measure,beat=beat,notei=notei}
@@ -385,15 +383,15 @@ function Tmi:parse_line(line,on,last_note)
       if b=="*" then
         b=beats[i-1]
       end
-      local note_parts = utils.string_split(b,",")
+      local note_parts=utils.string_split(b,",")
       beat=math.floor((i-1)*(self.ppm/l.division)+1)..""
       for j,b0 in ipairs(note_parts) do
         if tonumber(b0)~=nil then
           -- part is a number, assume it is a cc
           -- ccs are pairs of integers, the cc number followed by value
-          if (j-1)%2==1 then 
-            local cc_number = note_parts[j-1]
-            local cc_value = note_parts[j]
+          if (j-1)%2==1 then
+            local cc_number=note_parts[j-1]
+            local cc_value=note_parts[j]
             if l.emit[beat]==nil then
               l.emit[beat]={cc={}}
             end
