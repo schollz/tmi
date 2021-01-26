@@ -3,8 +3,8 @@ if util.file_exists(_path.code.."tmi") then
   tmi=include("tmi/lib/tmi")
   m=tmi:new()
   -- m:load("plinky","/home/we/dust/data/tmi/ccs",1)
-  m:load("plinky","/home/we/dust/data/tmi/test2.tmi",1)
-  m:toggle_play()
+  -- m:load("plinky","/home/we/dust/data/tmi/test2.tmi",1)
+  -- m:toggle_play()
 end
 
 
