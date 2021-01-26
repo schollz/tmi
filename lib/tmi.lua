@@ -141,13 +141,25 @@ function Tmi:live_reload()
       if track.last_modified~=utils.last_modified(track.filename) then
         print("live reloading instrument "..i.." with filename "..track.filename)
         clock.run(function()
-		-- WORK
 	  notes_on = {table.unpack(track.notes_on)}
-	  measures = {table.unpack(track.measures)}
           self:_load(i,track.filename,track.slot)
 	  self.instrument[i].track[slot].notes_on = notes_on
-	  -- TODO: check if any measures changed and turn those notes off
+	  -- WORK
+	  -- check if any measures changed and turn those notes off 
+	  -- if they are currently playing
           -- self:stop_notes(i,slot)
+	  for note,notedat in pairs(notes_on) do 
+		local notes=self.instrument[i].track[slot].measures[notedat.measure].emit[notedat.beat..""]
+		-- make sure note on is still in the ntoes
+		if notes ~= nil and notes.on ~= nil and notes.on[notedat.notei] ~= nil and notes.on[notedat.notei].m==note.m then 
+		 	-- all good
+		else
+			-- stop this particular note
+			print("need to stop note "..note.m)
+              		self.instrument[i].midi:note_off(note.m)
+              		self.instrument[i].track[slot].notes_on[note.m]=nil
+		end
+	  end
         end)
       end
     end
@@ -191,12 +203,12 @@ function Tmi:emit_note(t)
         end
         if notes.on~=nil then
           -- emit the notes
-          for _,note in ipairs(notes.on) do
+          for notei,note in ipairs(notes.on) do
             if note.m~=nil then
               local velocity = math.floor(util.clamp(note.v*params:get(instrument.port..track.slot.."scaling"),0,127))
               print("tmi: instrument "..k..", track "..i..", measure "..(self.measure+1)..", beat "..((beat-1)/self.ppqn+1)..", note_on="..note.m..", v="..velocity)
               self.instrument[k].midi:note_on(note.m,velocity)
-              self.instrument[k].track[i].notes_on[note.m]=true
+              self.instrument[k].track[i].notes_on[note.m]={measure=measure,beat=beat,notei=notei}
             end
           end
         end
