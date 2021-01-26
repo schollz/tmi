@@ -24,6 +24,7 @@ function key(k,z)
     print("hard sync")
     m:toggle_play()
   end
+  redraw()
 end
 
 

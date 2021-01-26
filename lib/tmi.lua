@@ -128,11 +128,7 @@ function Tmi:toggle_play()
 end
 
 function Tmi:is_playing()
-  if #self.instrument==0 then
-    return false
-  else
-    return params:get("tmi_playing")==1
-  end
+  return self.playing
 end
 
 function Tmi:live_reload()
