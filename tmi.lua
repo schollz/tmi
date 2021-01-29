@@ -11,7 +11,7 @@ if util.file_exists(_path.code.."tmi") then
       {name="polyperc",note_on="engine.amp(<velocity>/127); engine.hz(MusicUtil.note_num_to_freq(<note>))"},
     },
   })
-  m:load("polyperc","/home/we/dust/data/tmi/test2.tmi",1)
+  -- m:load("polyperc","/home/we/dust/data/tmi/test2.tmi",1)
   -- m:load("plinky","/home/we/dust/data/tmi/test2.tmi",1)
   -- m:toggle_play()
 end
