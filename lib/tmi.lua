@@ -41,9 +41,10 @@ function Tmi:new(args)
   local found_instruments=false
   for _,dev in pairs(midi.devices) do
     if dev.port~=nil then
-      print("adding "..dev.name.." to port "..dev.port)
+      local name = string.lower(dev.name)
+      print("adding "..name.." to port "..dev.port)
       found_instruments=true
-      m.instrument[dev.name]={
+      m.instrument[name]={
         name=dev.name,
         port=dev.port,
         midi=midi.connect(dev.port),
@@ -338,14 +339,14 @@ function Tmi:load(instrument_name,filename,slot)
   if instrument_name~=nil then
     params:set(instrument_name..slot.."load_name_tmi",filename)
   else
-    print("could not find "..instrument_name_original)
+    print("tmi: load: could not find "..instrument_name_original)
   end
 end
 
 function Tmi:_load(instrument_name,filename,slot)
   self.loading=true
   if self.instrument[instrument_name]==nil then
-    print("tmi: could not find instrument '"..instrument_name.."'")
+    print("tmi: _load: could not find instrument '"..instrument_name.."'")
     self.loading=false
     do return end
   end
